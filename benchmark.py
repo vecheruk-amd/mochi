@@ -10,8 +10,16 @@ from genmo.mochi_preview.pipelines import (
     T5ModelFactory,
     linear_quadratic_schedule,
 )
- 
-MOCHI_DIR = "/data/mochi"
+
+# Set up command line argument parsing
+parser = argparse.ArgumentParser(description="Benchmark the Mochi pipeline")
+parser.add_argument("--model_dir", type=str, default="/data/mochi", 
+                    help="Directory containing model files")
+
+args = parser.parse_args()
+
+MOCHI_DIR = args.model_dir
+
  
 pipeline = MochiSingleGPUPipeline(
     text_encoder_factory=T5ModelFactory(),
