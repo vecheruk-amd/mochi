@@ -3,6 +3,7 @@ from typing import Optional, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torch.nn.attention import sdpa_kernel
 
 
 def modulate(x, shift, scale):
@@ -87,7 +88,8 @@ class AttentionPool(nn.Module):
         q = q.unsqueeze(2)  # (B, H, 1, head_dim)
 
         # Compute attention.
-        x = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, dropout_p=0.0)  # (B, H, 1, head_dim)
+        with sdpa_kernel(torch.nn.attention.SDPBackend.MATH):
+            x = F.scaled_dot_product_attention(q, k, v, attn_mask=attn_mask, dropout_p=0.0)  # (B, H, 1, head_dim)
 
         # Concatenate heads and run output.
         x = x.squeeze(2).flatten(1, 2)  # (B, D = H * head_dim)
